@@ -5,10 +5,10 @@ export * as Updater from "./utils/updater";
 export * as QuickCss from "./utils/quickCss";
 
 import { popNotice, showNotice } from "./api/Notices";
-import { Settings } from "./api/settings";
+import { Settings, PlainSettings } from "./api/settings";
 import { startAllPlugins } from "./plugins";
 
-export { Settings };
+export { Settings, PlainSettings };
 
 import "./webpack/patchWebpack";
 import "./utils/quickCss";
@@ -22,7 +22,7 @@ Object.defineProperty(window, "IS_WEB", {
     enumerable: true
 });
 
-export let Components;
+export let Components: any;
 
 async function init() {
     await onceReady;

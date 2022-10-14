@@ -28,7 +28,7 @@ export function lazyWebpack<T = any>(filter: FilterFn): T {
         construct: (_, args, newTarget) => Reflect.construct(getMod(), args, newTarget),
         deleteProperty: (_, prop) => delete getMod()[prop],
         defineProperty: (_, property, attributes) => !!Object.defineProperty(getMod(), property, attributes)
-    }) as T;
+    }) as any as T;
 }
 
 /**
@@ -124,4 +124,44 @@ export function humanFriendlyJoin(elements: any[], mapper: (e: any) => string = 
  */
 export function classes(...classes: string[]) {
     return classes.join(" ");
+}
+
+export function sleep(ms: number): Promise<void> {
+    return new Promise(r => setTimeout(r, ms));
+}
+
+/**
+ * Wraps a Function into a try catch block and logs any errors caught
+ * Due to the nature of this function, not all paths return a result.
+ * Thus, for consistency, the returned functions will always return void or Promise<void>
+ *
+ * @param name Name identifying the wrapped function. This will appear in the logged errors
+ * @param func Function (async or sync both work)
+ * @param thisObject Optional thisObject
+ * @returns Wrapped Function
+ */
+export function suppressErrors<F extends Function>(name: string, func: F, thisObject?: any): F {
+    return (func.constructor.name === "AsyncFunction"
+        ? async function (this: any) {
+            try {
+                await func.apply(thisObject ?? this, arguments);
+            } catch (e) {
+                console.error(`Caught an Error in ${name || "anonymous"}\n`, e);
+            }
+        }
+        : function (this: any) {
+            try {
+                func.apply(thisObject ?? this, arguments);
+            } catch (e) {
+                console.error(`Caught an Error in ${name || "anonymous"}\n`, e);
+            }
+        }) as any as F;
+}
+
+/**
+ * Wrap the text in ``` with an optional language
+ */
+export function makeCodeblock(text: string, language?: string) {
+    const chars = "```";
+    return `${chars}${language || ""}\n${text}\n${chars}`;
 }

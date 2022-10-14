@@ -100,10 +100,17 @@ export default ErrorBoundary.wrap(function Settings() {
             <Switch
                 value={settings.useQuickCss}
                 onChange={(v: boolean) => settings.useQuickCss = v}
-                note="Enable QuickCSS"
+                note="Loads styles from your QuickCss file"
             >
                 Use QuickCss
             </Switch>
+            {!IS_WEB && <Switch
+                value={settings.enableReactDevtools}
+                onChange={(v: boolean) => settings.enableReactDevtools = v}
+                note="Requires a full restart"
+            >
+                Enable React Developer Tools
+            </Switch>}
             {!IS_WEB && <Switch
                 value={settings.notifyAboutUpdates}
                 onChange={(v: boolean) => settings.notifyAboutUpdates = v}
@@ -127,7 +134,7 @@ export default ErrorBoundary.wrap(function Settings() {
                         disabled={p.required || dependency}
                         key={p.name}
                         value={settings.plugins[p.name].enabled || p.required || dependency}
-                        onChange={v => {
+                        onChange={(v: boolean) => {
                             settings.plugins[p.name].enabled = v;
                             let needsRestart = Boolean(p.patches?.length);
                             if (v) {

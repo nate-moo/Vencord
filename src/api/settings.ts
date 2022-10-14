@@ -3,9 +3,10 @@ import IpcEvents from "../utils/IpcEvents";
 import { React } from "../webpack/common";
 import { mergeDefaults } from "../utils/misc";
 
-interface Settings {
+export interface Settings {
     notifyAboutUpdates: boolean;
     useQuickCss: boolean;
+    enableReactDevtools: boolean;
     plugins: {
         [plugin: string]: {
             enabled: boolean;
@@ -17,6 +18,7 @@ interface Settings {
 const DefaultSettings: Settings = {
     notifyAboutUpdates: true,
     useQuickCss: true,
+    enableReactDevtools: false,
     plugins: {}
 };
 
@@ -44,7 +46,7 @@ function makeProxy(settings: Settings, root = settings, path = ""): Settings {
     return new Proxy(settings, {
         get(target, p: string) {
             const v = target[p];
-            if (typeof v === "object" && !Array.isArray(v))
+            if (typeof v === "object" && !Array.isArray(v) && v !== null)
                 return makeProxy(v, root, `${path}${path && "."}${p}`);
             return v;
         },
@@ -65,11 +67,17 @@ function makeProxy(settings: Settings, root = settings, path = ""): Settings {
 }
 
 /**
+ * Same as {@link Settings} but unproxied. You should treat this as readonly,
+ * as modifying properties on this will not save to disk or call settings
+ * listeners.
+ */
+export const PlainSettings = settings;
+/**
  * A smart settings object. Altering props automagically saves
  * the updated settings to disk.
+ * This recursively proxies objects. If you need the object non proxied, use {@link PlainSettings}
  */
 export const Settings = makeProxy(settings);
-
 /**
  * Settings hook for React components. Returns a smart settings
  * object that automagically triggers a rerender if any properties
